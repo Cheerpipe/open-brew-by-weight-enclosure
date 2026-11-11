@@ -1,0 +1,17 @@
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Generated: rebuild with viewer/make_viewer.py
+viewer/viewer.html
+
+# Zipped kits: attach them to a GitHub release instead
+*.zip
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Case viewer</title>
+<style>body{margin:0;background:#1e1e1e;color:#ddd;font:13px sans-serif}#ui{position:fixed;top:8px;left:8px;z-index:2;display:flex;gap:10px;flex-wrap:wrap}label{cursor:pointer}</style>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+</head><body><div id="ui"></div>
+<script type="module">
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {STLLoader} from 'three/addons/loaders/STLLoader.js';
+const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});r.setSize(innerWidth,innerHeight);document.body.appendChild(r.domElement);
+const s=new THREE.Scene();s.background=new THREE.Color(0x1e1e1e);
+const c=new THREE.PerspectiveCamera(35,innerWidth/innerHeight,1,2000);c.up.set(0,0,1);
+const o=new OrbitControls(c,r.domElement);o.target.set(-46,-22,10);window.o=o;
+s.add(new THREE.HemisphereLight(0xffffff,0x444444,1.2));const d=new THREE.DirectionalLight(0xffffff,1.5);d.position.set(60,-80,120);s.add(d);
+const L=new STLLoader();const groups={};
+for(const [n,b,col,op,g] of [%PARTS%]){
+  const geo=L.parse(Uint8Array.from(atob(b),ch=>ch.charCodeAt(0)).buffer);
+  const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({color:col,roughness:.6,transparent:op<1,opacity:op,side:THREE.DoubleSide}));
+  m.name=n;s.add(m);(groups[g]=groups[g]||[]).push(m);
+  const l=document.createElement('label');l.innerHTML=`<input type=checkbox ${g=='alt'?'':'checked'}> ${n}`;m.visible=g!='alt';
+  l.firstChild.onchange=e=>{m.visible=e.target.checked;draw()};ui.appendChild(l);
+}
+const draw=()=>r.render(s,c);
+window.view=(el,az,dist=170)=>{const e=el*Math.PI/180,a=az*Math.PI/180;c.position.set(o.target.x+dist*Math.cos(e)*Math.cos(a),o.target.y+dist*Math.cos(e)*Math.sin(a),o.target.z+dist*Math.sin(e));o.update();draw()};
+window.only=(...names)=>{s.children.forEach(m=>{if(m.isMesh)m.visible=names.includes(m.name)});draw()};
+o.addEventListener('change',draw);addEventListener('resize',()=>{c.aspect=innerWidth/innerHeight;c.updateProjectionMatrix();r.setSize(innerWidth,innerHeight);draw()});
+view(40,-120);
+</script></body></html>
