@@ -91,14 +91,13 @@ Each kit folder has the parts in STL, 3MF and OBJ.
 
 ## What you'll need
 
-- 4 M2.5 brass heat-set inserts, 3 mm long and 3.5 mm outer diameter.
-- 4 M2.5 × 4 mm screws.
+- 4 M2.5 × 4 mm screws (or similar): they thread straight into the printed boss through a 2.2 mm hole that goes all the way through the floor. No inserts needed.
 - One 2×10 dupont housing, with pin 1 marked on both the housing and the board.
 - Cable ties about 2.5 mm wide (versions 1, 2 and 4).
 
 ## Assembly
 
-1. Press the inserts in with a soldering iron, then screw down the board and the buzzer module.
+1. Screw down the board and the buzzer module.
 2. Plug in the buzzer connector, which sits against the stop, and the 2×10 connector.
 3. Slide the bridge over the wires and press it down until it clicks into the case. For the tunnel bridge,
    fold the wires towards the end you want and lower the bridge over them.
@@ -145,7 +144,7 @@ Printers differ. Change one value near the top of `src/case.py` and rebuild:
 
 | Value | Adjusts |
 |---|---|
-| `INSERT_HOLE` | Hole diameter for the heat-set inserts. |
+| `SELFTAP_HOLE` | Screw hole diameter (2.2 mm for M2.5). Make it smaller if your screws are loose, larger if they will not go in. |
 | `HOUSING_H` | Height of your 2×10 dupont housing. |
 | `VARIANTS` | Gap above the lips and plate thickness of each bridge. Raise the gap to give the wires a longer straight run before they bend, at the cost of that much height. |
 | `DUCT_W`, `DUCT_H` | Width and height of the duct in the tunnel bridge. |
