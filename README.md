@@ -91,7 +91,7 @@ Each kit folder has the parts in STL, 3MF and OBJ.
 
 ## What you'll need
 
-- 4 M2.5 × 4 mm screws (or similar): they thread straight into the printed boss through a 2.2 mm hole that goes all the way through the floor. No inserts needed.
+- 4 M2.5 × 4 mm screws (or similar): they thread straight into the printed boss through a 2.4 mm hole that goes all the way through the floor. No inserts needed.
 - One 2×10 dupont housing, with pin 1 marked on both the housing and the board.
 - Cable ties about 2.5 mm wide (versions 1, 2 and 4).
 
@@ -144,12 +144,28 @@ Printers differ. Change one value near the top of `src/case.py` and rebuild:
 
 | Value | Adjusts |
 |---|---|
-| `SELFTAP_HOLE` | Screw hole diameter (2.2 mm for M2.5). Make it smaller if your screws are loose, larger if they will not go in. |
+| `SELFTAP_HOLE` | Screw hole diameter, 2.4 mm by default (for M2.5). See [Screw hole size](#screw-hole-size). |
 | `HOUSING_H` | Height of your 2×10 dupont housing. |
 | `VARIANTS` | Gap above the lips and plate thickness of each bridge. Raise the gap to give the wires a longer straight run before they bend, at the cost of that much height. |
 | `DUCT_W`, `DUCT_H` | Width and height of the duct in the tunnel bridge. |
+| `SNAP_BUMP`, `SNAP_CLEAR` | Bridge-to-case snap: first number of each point is the hook depth (1.2 mm). Raise it to hold harder, lower it if the bridge is too hard to press in. `SNAP_CLEAR` is the groove clearance: lower it if the bridge rattles. |
 | `CLIP_CLEAR` | Clip fit: raise it if the clip is too tight, lower it if it's loose. |
 | `SPK_STOP_FACE_X` | Position of the buzzer connector stop. |
+
+#### Screw hole size
+
+The four screw holes go all the way through the boss and the floor, and the screw cuts its own thread in the
+plastic. To change the width, edit this line near the top of `src/case.py`:
+
+```python
+INSERT_HOLE, SELFTAP_HOLE = 3.4, 2.4
+```
+
+Change the second number, `SELFTAP_HOLE` (in mm), then run `venv/bin/python src/case.py` to rebuild every case in `print/`.
+A good starting point is the screw's thread diameter minus about 0.3 mm (2.4 here for M2.5, 1.7 for M2, 2.7 for M3).
+Make it smaller if the screws are loose, larger if they won't go in. If you prefer heat-set inserts, set
+`SCREW_MODE = "insert"` on the line above it: the holes then use `INSERT_HOLE` and stop 3.2 mm down instead of
+going through.
 
 ## License
 

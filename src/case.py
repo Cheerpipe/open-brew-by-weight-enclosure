@@ -25,7 +25,7 @@ PCB_T = 1.6
 
 # Fasteners: M2.5 everywhere (4x M2.5 x 4 screws).
 SCREW_MODE = "selftap"  # "insert" = heat-set M2.5 x L3 x OD3.5, "selftap" = screw straight into PETG
-INSERT_HOLE, SELFTAP_HOLE = 3.4, 2.2   # self-tap holes go all the way through boss and floor
+INSERT_HOLE, SELFTAP_HOLE = 3.4, 2.4   # self-tap holes go all the way through boss and floor
 BOSS_D = 6.5
 PCB_HOLES = [(-72.2, 10.4), (-72.2, -38.6), (-19.7, -38.6)]
 SPK_HOLE = (-57.2, -50.1)
@@ -47,8 +47,8 @@ SLOT = [(-69.3, -67.3, 9.0, HEIGHT + 1), (-69.3, -64.1, 9.0, 11.0),
 
 # Snap joint between bridge legs and case walls.
 SNAP_Y = (-35.4, -9.9)
-SNAP_BUMP = [(0.0, 15.2), (0.8, 16.3), (0.0, 16.75)]   # (depth into wall, z)
-SNAP_CLEAR = 0.15
+SNAP_BUMP = [(0.0, 15.0), (1.2, 16.0), (1.2, 16.4), (0.0, 16.7)]   # (depth into wall, z): 1.2 mm hook, ~40 deg lead-in, retaining face only ~14 deg off flat
+SNAP_CLEAR = 0.1
 
 # Stop behind the buzzer module's right-angle dupont plugs, whose ends sit 11.4 mm from the
 # relay-side wall (x -28.4). 1.5 mm of play absorbs measuring error and still keeps the pins
