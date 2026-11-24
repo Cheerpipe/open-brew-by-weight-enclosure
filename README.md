@@ -149,7 +149,7 @@ Printers differ. Change one value near the top of `src/case.py` and rebuild:
 | `HOUSING_H` | Height of your 2×10 dupont housing. |
 | `VARIANTS` | Gap above the lips and plate thickness of each bridge. Raise the gap to give the wires a longer straight run before they bend, at the cost of that much height. |
 | `DUCT_W`, `DUCT_H` | Width and height of the duct in the tunnel bridge. |
-| `P4_NOTCH` | Notch in the bridge plate for a dupont plug on the 1×6 P4 header: x from, x to, and y start (it runs out of the open end). |
+| `P4_PLUG`, `P4_LIP` | Plug on the 1×6 P4 header: its footprint (x0, x1, y0, y1) and how far the bridge's lips overlap its edges (0.4 mm). Lower `P4_LIP` if the wires touch the lips. |
 | `SNAP_BUMP`, `SNAP_CLEAR` | Bridge-to-case snap: first number of each point is the hook depth (1.2 mm). Raise it to hold harder, lower it if the bridge is too hard to press in. `SNAP_CLEAR` is the groove clearance: lower it if the bridge rattles. |
 | `CLIP_CLEAR` | Clip fit, 0.05 mm by default: raise it (0.1, 0.15) if the clip will not slide on, set it to 0 if it is loose. `CLIP_BACK`, `CLIP_WALL` and `CLIP_BAR` set how thick the clip is. |
 | `SPK_STOP_FACE_X` | Position of the buzzer connector stop. |

@@ -116,9 +116,11 @@ def bridge_profile(variant):
 
 TIE_SLOT = (3.4, 1.8)             # cable-tie slot (along x, along y)
 TIE_SLOTS = [(-61.0, -13.6), (-61.0, -31.5), (-38.0, -13.6), (-38.0, -31.5)]
-# The P4 header (1x6, pins from x -29.5 every 2.54 at y -10) takes a dupont plug whose wires rise through the plate:
-# a notch open to the end of the bridge gives the plug and its wires room. Box: x0, x1, y0 (it runs out of the +y edge).
-P4_NOTCH = (-44.6, -27.8, -11.6)
+# P4 header (1x6, pins from x -29.5 every 2.54 at y -10) takes a dupont plug whose wires rise through the plate. Like
+# the 2x10, the bridge only presses on the plug's edges: lips over its two ends and its -y side, opening to the +y end
+# of the bridge so the wires pass and the bridge lowers over them. Plug footprint (x0, x1, y0, y1) and lip overlap.
+P4_PLUG = (-43.47, -28.23, -11.27, -8.73)
+P4_LIP, P4_LIP_OUT = 0.4, 0.8
 # Tall parts under the bridge, as (x, y, diameter, height above the PCB); the bridge
 # keeps CAP_MARGIN of air around them. The bulk capacitor sits under the USB-side leg.
 BULK_CAP = (-70.4, -11.0, 8.0, 12.0)
@@ -305,8 +307,13 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
                                 .translate((hx, y, top + CAP_CLEAR)) for y in ends])
     # The tunnel roof is solid, so the logo goes in the middle of the bridge; elsewhere the slit is in the way.
     logo_c = (BRIDGE_AXIS, (BRIDGE_START_Y + hy + oy) / 2) if duct else LOGO_C
-    p4 = box(P4_NOTCH[0], P4_NOTCH[2], PLATE_Z[0] - 1, P4_NOTCH[1], hy + oy + 1, PLATE_Z[1] + 1)   # P4 plug and wires
-    cuts = ties + [p4, slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
+    px0, px1, py0, py1 = P4_PLUG
+    # P4 lips: a frame round the plug (not on its +y side) from the clearance above it up to the plate, then the
+    # opening for the wires (and the clearance under a flush plate) cut out of it.
+    p4_lips = box(px0 - P4_LIP_OUT, py0 - P4_LIP_OUT, top + CAP_CLEAR, px1 + P4_LIP_OUT, py1, PLATE_Z[0] + 0.01)
+    p4_open = box(px0 + P4_LIP, py0 + P4_LIP, 0, px1 - P4_LIP, hy + oy + 1, PLATE_Z[1] + 1)
+    p4_room = box(px0 - CAP_CLEAR, py0 - CAP_CLEAR, 0, px1 + CAP_CLEAR, hy + oy + 1, top + CAP_CLEAR)
+    cuts = ties + [p4_open, p4_room, slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
     # The bulk capacitor sits 0.4-0.7 mm from the case wall, right where the left leg goes. The leg and its snap
     # bump are cut away from the capacitor to the end of the bridge, so the leg just stops: a pocket round the
     # capacitor alone would leave a sliver of leg hanging past it, in the air when printed. The ledge on the
@@ -315,7 +322,7 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
     notch_y0, notch_top = cap_y - cap_d / 2 - CAP_MARGIN, pcb_top + cap_h + CAP_MARGIN
     notch = [box(LEG_X[0], notch_y0, 14.0, notch_top - 93.1, 0.0, notch_top),   # leg and the strut corner over the capacitor
              box(LEG_X[0] - 1.5, notch_y0, 14.0, LEG_X[0] + 0.5, 0.0, 17.5)]      # snap bump, below the ledge; overlaps the leg cut
-    return union([frame] + posts + rails_lips) - union(cuts + notch) - (union(pockets) ^ inside)
+    return union([frame, p4_lips] + posts + rails_lips) - union(cuts + notch) - (union(pockets) ^ inside)
 
 
 def clip(variant=DEFAULT_VARIANT):
