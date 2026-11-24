@@ -127,7 +127,12 @@ LOGO_C, LOGO_H, LOGO_DEPTH = (-38.0, -22.0), 15.0, 0.6
 # rails run on as horns past the plate end, and a press-on clip grips their notched outer faces.
 HORN_L, HORN_BOTTOM = 2.4, 20.0     # horns run from HORN_BOTTOM up to the plate underside
 NOTCH_Z, NOTCH_DEPTH = (21.0, 22.0), 0.4
-CLIP_CLEAR, CLIP_WALL, CLIP_BAR = 0.15, 1.2, 1.6
+# The clip is a solid block with a blind socket for each horn: the horns go into it, so it holds them apart and
+# together, and cannot spring open. A ridge in each socket rides in the horn notch, adding grip. It slides on from
+# the open end. CLIP_CLEAR is the fit: lower is tighter. CLIP_BACK is the wall behind the sockets. The bottom stays
+# thin because the small capacitor is just below, and the outer walls are capped by the relay, whose corner is
+# 0.3 mm from the clip.
+CLIP_CLEAR, CLIP_WALL, CLIP_BAR, CLIP_BOTTOM, CLIP_BACK = 0.05, 1.6, 2.0, 1.6, 1.6
 
 
 def rrect(x0, y0, x1, y1, r=0.0):
@@ -310,21 +315,24 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
 
 
 def clip(variant=DEFAULT_VARIANT):
-    """Press-on clip over the open bridge's horns, built in place; prints lying on its profile."""
+    """Solid block with a blind socket for each horn, built in place; prints with the socket mouths on the bed."""
     HORN_Z = horn_z(variant)
     hx, hy = HOUSING_C
-    ox = HOUSING_W / 2 + CAP_CLEAR + CAP_WALL
-    jaw = ox + CLIP_CLEAR
-    top = HORN_Z[1] + CLIP_CLEAR
-    half = [(jaw + CLIP_WALL, HORN_Z[0]), (jaw + CLIP_WALL, top + CLIP_BAR), (0, top + CLIP_BAR), (0, top),
-            (jaw, top), (jaw, NOTCH_Z[1] - CLIP_CLEAR),                      # retention face under the notch top
-            (ox - NOTCH_DEPTH + CLIP_CLEAR, NOTCH_Z[1] - CLIP_CLEAR),
-            (ox - NOTCH_DEPTH + CLIP_CLEAR, NOTCH_Z[0] + 0.4), (jaw, NOTCH_Z[0]),   # 45 deg lead-in ramp
-            (jaw, HORN_Z[0])]
-    right = CrossSection([np.array(half)], m3d.FillRule.EvenOdd)
-    profile = (right + right.mirror((1, 0))).translate((hx, 0))
+    ix, ox = HOUSING_W / 2 + CAP_CLEAR, HOUSING_W / 2 + CAP_CLEAR + CAP_WALL
+    c = CLIP_CLEAR
     end = hy + HOUSING_L / 2 + CAP_CLEAR + CAP_WALL   # open end of the bridge
-    return xz_prism(profile, end + CLIP_CLEAR, end + HORN_L)
+    y0, y1 = end + c, end + HORN_L + 0.1 + CLIP_BACK
+    block = xz_prism(rrect(hx - ox - CLIP_WALL, HORN_Z[0] - c - CLIP_BOTTOM, hx + ox + CLIP_WALL, HORN_Z[1] + c + CLIP_BAR, 0.4), y0, y1)
+    sockets = []
+    for s in (-1, 1):
+        sock = rrect(min(s * (ix - c), s * (ox + c)), HORN_Z[0] - c, max(s * (ix - c), s * (ox + c)), HORN_Z[1] + c)
+        ridge = box2(s * (ox - NOTCH_DEPTH + c), NOTCH_Z[0] + c, s * (ox + c + 0.01), NOTCH_Z[1] - c)   # sits in the notch
+        sockets.append(xz_prism((sock - ridge).translate((hx, 0)), y0 - 0.01, end + HORN_L + 0.1))
+    return block - union(sockets)
+
+
+def box2(xa, za, xb, zb):
+    return rrect(min(xa, xb), min(za, zb), max(xa, xb), max(za, zb))
 
 
 def brand_mark(centre=LOGO_C):

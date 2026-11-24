@@ -101,10 +101,11 @@ Each kit folder has the parts in STL, 3MF and OBJ.
 2. Plug in the buzzer connector, which sits against the stop, and the 2×10 connector.
 3. Slide the bridge over the wires and press it down until it clicks into the case. For the tunnel bridge,
    fold the wires towards the end you want and lower the bridge over them.
-4. Press the clip onto the two horns at the open end until it snaps.
+4. Slide the clip onto the two horns from the open end until it stops. It is a solid block with a socket for each
+   horn, so it holds the halves together and apart. A ridge in each socket rides in the horn's notch for extra grip.
 5. Tie the wires leaving the case to the bridge slots with a cable tie.
 
-To remove the clip, spread its legs slightly with a fingernail or a small screwdriver.
+To remove the clip, pull it straight back off the horns. If it still works loose, put a drop of cyanoacrylate glue on the horns before sliding it on.
 
 ## Changing the design
 
@@ -149,7 +150,7 @@ Printers differ. Change one value near the top of `src/case.py` and rebuild:
 | `VARIANTS` | Gap above the lips and plate thickness of each bridge. Raise the gap to give the wires a longer straight run before they bend, at the cost of that much height. |
 | `DUCT_W`, `DUCT_H` | Width and height of the duct in the tunnel bridge. |
 | `SNAP_BUMP`, `SNAP_CLEAR` | Bridge-to-case snap: first number of each point is the hook depth (1.2 mm). Raise it to hold harder, lower it if the bridge is too hard to press in. `SNAP_CLEAR` is the groove clearance: lower it if the bridge rattles. |
-| `CLIP_CLEAR` | Clip fit: raise it if the clip is too tight, lower it if it's loose. |
+| `CLIP_CLEAR` | Clip fit, 0.05 mm by default: raise it (0.1, 0.15) if the clip will not slide on, set it to 0 if it is loose. `CLIP_BACK`, `CLIP_WALL` and `CLIP_BAR` set how thick the clip is. |
 | `SPK_STOP_FACE_X` | Position of the buzzer connector stop. |
 
 #### Screw hole size
