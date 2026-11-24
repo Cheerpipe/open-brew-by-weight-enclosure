@@ -24,8 +24,8 @@ SUPPORT_TOP = 5.1      # PCB and buzzer module rest here: 1.9 mm under the board
 PCB_T = 1.6
 
 # Fasteners: M2.5 everywhere (4x M2.5 x 4 screws).
-SCREW_MODE = "insert"  # "insert" = heat-set M2.5 x L3 x OD3.5, "selftap" = screw straight into PETG
-INSERT_HOLE, SELFTAP_HOLE, HOLE_DEPTH = 3.4, 2.2, 3.2
+SCREW_MODE = "selftap"  # "insert" = heat-set M2.5 x L3 x OD3.5, "selftap" = screw straight into PETG
+INSERT_HOLE, SELFTAP_HOLE = 3.4, 2.2   # self-tap holes go all the way through boss and floor
 BOSS_D = 6.5
 PCB_HOLES = [(-72.2, 10.4), (-72.2, -38.6), (-19.7, -38.6)]
 SPK_HOLE = (-57.2, -50.1)
@@ -199,7 +199,8 @@ def round_corner(y, z, r, side, x0, x1):
 
 def screw_hole(x, y, top):
     d = INSERT_HOLE if SCREW_MODE == "insert" else SELFTAP_HOLE
-    hole = Manifold.cylinder(HOLE_DEPTH + 0.01, d / 2, circular_segments=SEG).translate((x, y, top - HOLE_DEPTH))
+    depth = top if SCREW_MODE == "selftap" else 3.2   # self-tap: through boss and floor; insert: blind pocket
+    hole = Manifold.cylinder(depth + 0.02, d / 2, circular_segments=SEG).translate((x, y, top - depth - 0.01))
     lead = Manifold.cylinder(0.5, d / 2, d / 2 + 0.5, circular_segments=SEG).translate((x, y, top - 0.49))
     return hole + lead
 
