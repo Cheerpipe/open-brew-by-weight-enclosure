@@ -115,14 +115,17 @@ def bridge_profile(variant):
 
 
 TIE_SLOT = (3.4, 1.8)             # cable-tie slot (along x, along y)
-TIE_SLOTS = [(-61.0, -12.5), (-61.0, -31.5), (-38.0, -12.5), (-38.0, -31.5)]
+TIE_SLOTS = [(-61.0, -13.6), (-61.0, -31.5), (-38.0, -13.6), (-38.0, -31.5)]
+# The P4 header (1x6, pins from x -29.5 every 2.54 at y -10) takes a dupont plug whose wires rise through the plate:
+# a notch open to the end of the bridge gives the plug and its wires room. Box: x0, x1, y0 (it runs out of the +y edge).
+P4_NOTCH = (-44.6, -27.8, -11.6)
 # Tall parts under the bridge, as (x, y, diameter, height above the PCB); the bridge
 # keeps CAP_MARGIN of air around them. The bulk capacitor sits under the USB-side leg.
 BULK_CAP = (-70.4, -11.0, 8.0, 12.0)
 SMALL_CAP = (-57.5, -5.6, 5.0, 11.0)
 CAP_MARGIN = 1.0
 # Brand mark (resources/icons/brand-mark.svg) engraved in the plate top, between the right tie slots.
-LOGO_C, LOGO_H, LOGO_DEPTH = (-38.0, -22.0), 15.0, 0.6
+LOGO_C, LOGO_H, LOGO_DEPTH = (-38.0, -22.0), 14.0, 0.6
 # Optional clip that ties the two halves of the open bridge together after installation: the cap
 # rails run on as horns past the plate end, and a press-on clip grips their notched outer faces.
 HORN_L, HORN_BOTTOM = 2.4, 20.0     # horns run from HORN_BOTTOM up to the plate underside
@@ -302,7 +305,8 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
                                 .translate((hx, y, top + CAP_CLEAR)) for y in ends])
     # The tunnel roof is solid, so the logo goes in the middle of the bridge; elsewhere the slit is in the way.
     logo_c = (BRIDGE_AXIS, (BRIDGE_START_Y + hy + oy) / 2) if duct else LOGO_C
-    cuts = ties + [slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
+    p4 = box(P4_NOTCH[0], P4_NOTCH[2], PLATE_Z[0] - 1, P4_NOTCH[1], hy + oy + 1, PLATE_Z[1] + 1)   # P4 plug and wires
+    cuts = ties + [p4, slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
     # The bulk capacitor sits 0.4-0.7 mm from the case wall, right where the left leg goes. The leg and its snap
     # bump are cut away from the capacitor to the end of the bridge, so the leg just stops: a pocket round the
     # capacitor alone would leave a sliver of leg hanging past it, in the air when printed. The ledge on the
