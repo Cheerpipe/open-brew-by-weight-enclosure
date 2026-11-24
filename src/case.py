@@ -116,11 +116,15 @@ def bridge_profile(variant):
 
 TIE_SLOT = (3.4, 1.8)             # cable-tie slot (along x, along y)
 TIE_SLOTS = [(-61.0, -13.6), (-61.0, -31.5), (-38.0, -13.6), (-38.0, -31.5)]
-# P4 header (1x6, pins from x -29.5 every 2.54 at y -10) takes a dupont plug whose wires rise through the plate. Like
-# the 2x10, the bridge only presses on the plug's edges: lips over its two ends and its -y side, opening to the +y end
-# of the bridge so the wires pass and the bridge lowers over them. Plug footprint (x0, x1, y0, y1) and lip overlap.
+# P4 header (1x6, pins from x -29.5 every 2.54 at y -10) takes a dupont plug that only has wires on some pins. The bridge
+# covers the whole top of the plug (P4_GAP above it, so it holds the plug down) and opens a slot only over the wired
+# pins, running out of the +y end of the bridge so the wires pass and the bridge lowers over them. Pins are counted
+# from 1 at x -29.5, the one nearest the case's right wall. Plug footprint is (x0, x1, y0, y1).
 P4_PLUG = (-43.47, -28.23, -11.27, -8.73)
-P4_LIP, P4_LIP_OUT = 0.4, 0.8
+P4_PIN1_X, P4_PITCH, P4_WIRES = -29.5, 2.54, (1, 5)
+P4_GAP = 0.2            # gap between the plug top and the cover; the 2x10 lips use CAP_CLEAR
+P4_SLOT_HALF = 1.0      # half width of the slot over a wired pin
+P4_LIP, P4_LIP_OUT = 0.4, 0.8   # slot starts P4_LIP inside the plug's -y edge; the cover reaches P4_LIP_OUT past its ends
 # Tall parts under the bridge, as (x, y, diameter, height above the PCB); the bridge
 # keeps CAP_MARGIN of air around them. The bulk capacitor sits under the USB-side leg.
 BULK_CAP = (-70.4, -11.0, 8.0, 12.0)
@@ -308,12 +312,13 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
     # The tunnel roof is solid, so the logo goes in the middle of the bridge; elsewhere the slit is in the way.
     logo_c = (BRIDGE_AXIS, (BRIDGE_START_Y + hy + oy) / 2) if duct else LOGO_C
     px0, px1, py0, py1 = P4_PLUG
-    # P4 lips: a frame round the plug (not on its +y side) from the clearance above it up to the plate, then the
-    # opening for the wires (and the clearance under a flush plate) cut out of it.
-    p4_lips = box(px0 - P4_LIP_OUT, py0 - P4_LIP_OUT, top + CAP_CLEAR, px1 + P4_LIP_OUT, py1, PLATE_Z[0] + 0.01)
-    p4_open = box(px0 + P4_LIP, py0 + P4_LIP, 0, px1 - P4_LIP, hy + oy + 1, PLATE_Z[1] + 1)
-    p4_room = box(px0 - CAP_CLEAR, py0 - CAP_CLEAR, 0, px1 + CAP_CLEAR, hy + oy + 1, top + CAP_CLEAR)
-    cuts = ties + [p4_open, p4_room, slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
+    # P4 cover: a block over the plug from just above it up to the plate, with a slot over each wired pin. A flush
+    # plate is lower than the plug, so the room under it is cut out first.
+    p4_lips = box(px0 - P4_LIP_OUT, py0 - P4_LIP_OUT, top + P4_GAP, px1 + P4_LIP_OUT, py1, PLATE_Z[0] + 0.01)
+    p4_open = [box(P4_PIN1_X - (n - 1) * P4_PITCH - P4_SLOT_HALF, py0 + P4_LIP, 0, P4_PIN1_X - (n - 1) * P4_PITCH + P4_SLOT_HALF,
+                   hy + oy + 1, PLATE_Z[1] + 1) for n in P4_WIRES]
+    p4_room = box(px0 - CAP_CLEAR, py0 - CAP_CLEAR, 0, px1 + CAP_CLEAR, hy + oy + 1, top + P4_GAP)
+    cuts = ties + p4_open + [p4_room, slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
     # The bulk capacitor sits 0.4-0.7 mm from the case wall, right where the left leg goes. The leg and its snap
     # bump are cut away from the capacitor to the end of the bridge, so the leg just stops: a pocket round the
     # capacitor alone would leave a sliver of leg hanging past it, in the air when printed. The ledge on the
