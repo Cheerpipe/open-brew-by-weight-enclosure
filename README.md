@@ -4,7 +4,7 @@
 
 3D-printable enclosures for the [Open Brew by Weight](https://github.com/Cheerpipe/Open-Brew-by-Weight)
 controller: an ESP32-S3 Relay X1 board with the buzzer module. Every version shares the same board
-mounts and openings; they differ in how much plastic they use and in how the 2×10 connector is held down.
+mounts and openings; they differ in how much plastic they use and whether the 2×10 connector is held down.
 
 The case is built from three kinds of parts:
 
@@ -15,63 +15,40 @@ The case is built from three kinds of parts:
 ## Versions
 
 Each version is a complete kit in its own folder in [`print/`](print). Pick one and print everything in it.
+Both bridge kits use the same bridge and clip.
 
 | | Version | Total height | Parts |
 |---|---|---|---|
-| 1 | [Full case, original bridge](#1-full-case-original-bridge) | 31.0 mm | Case, bridge, clip |
-| 2 | [Full case, low profile bridge](#2-full-case-low-profile-bridge) | 26.6 mm | Case, bridge (open or closed), clip |
-| 3 | [Full case, bridge with tunnel](#3-full-case-bridge-with-tunnel) | 32.05 mm | Case, bridge |
-| 4 | [Minimal case with bridge](#4-minimal-case-with-bridge) | 24.55 mm | Minimal case, minimal bridge, clip |
-| 5 | [Open minimal case](#5-open-minimal-case) | 8.7 mm | Minimal case |
+| 1 | [Full case with bridge](#1-full-case-with-bridge) | 24.55 mm | Case, bridge, clip |
+| 2 | [Minimal case with bridge](#2-minimal-case-with-bridge) | 24.55 mm | Minimal case, bridge, clip |
+| 3 | [Open minimal case](#3-open-minimal-case) | 8.7 mm | Minimal case |
 
 The board in the pictures is a rough model, only there to show the fit.
 
-### 1. Full case, original bridge
+### 1. Full case with bridge
 
-Folder: [`print/1-original`](print/1-original)
+Folder: [`print/1-full-case`](print/1-full-case)
 
-![Full case with the original bridge](images/1-original.png)
+![Full case with the bridge](images/1-full-case.png)
 
-The full-height case (18.1 mm walls) with a cable labyrinth on the side, plus the original bridge. The bridge
-sits highest of the open bridges and leaves the most room above the connector, so the wires have a longer
-straight run before they bend. Use it if your wires are stiff or your dupont housing is tall.
+The full-height case (18.1 mm walls) with a cable labyrinth on the side, plus the bridge: a thin 1.6 mm plate flush
+with the lips that hold the connector housing, so the whole thing is only 24.55 mm tall. Wires leave through the slit
+in the plate and start to bend just above the housing, so fold them gently.
 
-### 2. Full case, low profile bridge
+### 2. Minimal case with bridge
 
-Folder: [`print/2-lowprofile`](print/2-lowprofile)
+Folder: [`print/2-minimal-case-and-bridge`](print/2-minimal-case-and-bridge)
 
-![Full case with the low profile bridge](images/2-lowprofile.png)
-
-The same full case with a bridge whose plate rests right on the lips over the connector housing, 4.4 mm lower
-than the original. This is the default. The folder also has a **closed** bridge, closed at both ends, that
-needs no clip; the connector must be threaded through it before you plug it in.
-
-### 3. Full case, bridge with tunnel
-
-Folder: [`print/3-lowprofile-tunnel`](print/3-lowprofile-tunnel)
-
-![Full case with the tunnel bridge](images/3-lowprofile-tunnel.png)
-
-The full case with a bridge that has a closed roof instead of a slit. The wires rise from the connector, fold into
-a duct under the roof and leave through either end, so nothing crosses the top. The roof joins both halves, so
-it needs no clip and no cable ties. It is the tallest version.
-
-### 4. Minimal case with bridge
-
-Folder: [`print/4-minimal-case-and-bridge`](print/4-minimal-case-and-bridge)
-
-![Minimal case with the minimal bridge](images/4-minimal-case-and-bridge.png)
+![Minimal case with the bridge](images/2-minimal-case-and-bridge.png)
 
 A low tray with a rounded rim 2 mm above the board, keeping full-height walls only where the bridge snaps in.
-It comes with the minimal bridge, a thin 1.6 mm plate flush with the lips that hold the housing: the lowest
-bridge and the one with the least plastic. Wires leave over the rim, and they start to bend just above the
-housing, so fold them gently. Any bridge from the other kits also fits this case.
+It comes with the same bridge and clip as the full case, with the least plastic of the two. The wires leave over the rim.
 
-### 5. Open minimal case
+### 3. Open minimal case
 
-Folder: [`print/5-minimal-case-only`](print/5-minimal-case-only)
+Folder: [`print/3-minimal-case-only`](print/3-minimal-case-only)
 
-![Open minimal case](images/5-minimal-case-only.png)
+![Open minimal case](images/3-minimal-case-only.png)
 
 Only the low tray: the full 3.2 mm floor, the board and module rests, and the rounded rim. It protects and
 insulates the bottom of the board and uses about 25 % less plastic than the full case. There is no bridge, so
@@ -93,14 +70,13 @@ Each kit folder has the parts in STL, 3MF and OBJ.
 
 - 4 M2.5 × 4 mm screws (or similar): they thread straight into the printed boss through a 2.4 mm hole that goes all the way through the floor. No inserts needed.
 - One 2×10 dupont housing, with pin 1 marked on both the housing and the board.
-- Cable ties about 2.5 mm wide (versions 1, 2 and 4).
+- Cable ties about 2.5 mm wide (versions 1 and 2).
 
 ## Assembly
 
 1. Screw down the board and the buzzer module.
 2. Plug in the buzzer connector, which sits against the stop, and the 2×10 connector.
-3. Slide the bridge over the wires and press it down until it clicks into the case. For the tunnel bridge,
-   fold the wires towards the end you want and lower the bridge over them.
+3. Slide the bridge over the wires and press it down until it clicks into the case.
 4. Slide the clip onto the two horns from the open end until it stops against the bridge. It is a short bar with a
    through hole for each horn, so it holds the halves apart and together, and a ridge in each hole rides in the horn's
    notch. It is symmetric, so it goes on any way round.
@@ -114,7 +90,7 @@ The models are written in Python, so every dimension is a named value you can ch
 
 | Folder | Contents |
 |---|---|
-| [`src/`](src) | `case.py` holds the case, the bridges and the clips; `board.py` is a rough model of the board, used only to check fit. |
+| [`src/`](src) | `case.py` holds the case, the bridge and the clip; `board.py` is a rough model of the board, used only to check fit. |
 | [`viewer/`](viewer) | `make_viewer.py` builds a single-file 3D viewer of everything assembled; `render_images.py` renders the pictures in `images/`. |
 | [`print/`](print) | The ready-to-print files, one folder per kit. |
 
@@ -148,8 +124,7 @@ Printers differ. Change one value near the top of `src/case.py` and rebuild:
 |---|---|
 | `SELFTAP_HOLE` | Screw hole diameter, 2.4 mm by default (for M2.5). See [Screw hole size](#screw-hole-size). |
 | `HOUSING_H` | Height of your 2×10 dupont housing. |
-| `VARIANTS` | Gap above the lips and plate thickness of each bridge. Raise the gap to give the wires a longer straight run before they bend, at the cost of that much height. |
-| `DUCT_W`, `DUCT_H` | Width and height of the duct in the tunnel bridge. |
+| `PLATE_T` | Thickness of the bridge plate (1.6 mm). It sits flush with the lip tops, so a thicker plate grows downwards into the lips. |
 | `P4_WIRES`, `P4_PLUG`, `P4_GAP` | Plug on the 1×6 P4 header. `P4_WIRES` lists the pins that have wires (default 1 and 5, counting from 1 at the pin nearest the case's right wall); the bridge covers the rest of the plug and opens a slot only over those. If your pin numbering runs the other way, use `(2, 6)`. `P4_GAP` is the gap above the plug (0.2 mm): raise it if the bridge will not snap in. `P4_PLUG` is the plug footprint. |
 | `SNAP_BUMP`, `SNAP_CLEAR` | Bridge-to-case snap: first number of each point is the hook depth (1.2 mm). Raise it to hold harder, lower it if the bridge is too hard to press in. `SNAP_CLEAR` is the groove clearance: lower it if the bridge rattles. |
 | `CLIP_CLEAR` | Clip fit, 0.19 mm by default (picked from a printed test): raise it if the clip will not slide on, lower it if it is loose. `CLIP_WALL` and `CLIP_T` set the wall beside and above/below the holes. |
@@ -174,4 +149,4 @@ going through.
 
 [AGPL-3.0-or-later](LICENSE), the same as [Open Brew by Weight](https://github.com/Cheerpipe/Open-Brew-by-Weight).
 This covers the Python sources, the printable files and the pictures. The Open Brew by Weight logo engraved on the
-bridges is licensed under [CC BY 4.0](LICENSES/CC-BY-4.0.txt).
+bridge is licensed under [CC BY 4.0](LICENSES/CC-BY-4.0.txt).

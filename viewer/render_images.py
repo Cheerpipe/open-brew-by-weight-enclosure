@@ -93,11 +93,9 @@ def render(parts, path, el=38, az=-125, dist=175, target=(-46, -22, 8)):
 
 
 kits = {
-    "1-original": [(c.case(), ORANGE), (c.bridge(variant="original"), BRIDGE), (c.clip("original"), CLIP)],
-    "2-lowprofile": [(c.case(), ORANGE), (c.bridge(variant="lowprofile"), BRIDGE), (c.clip("lowprofile"), CLIP)],
-    "3-lowprofile-tunnel": [(c.case(), ORANGE), (c.bridge(variant="lowprofile-tunnel"), BRIDGE)],
-    "4-minimal-case-and-bridge": [(c.case(minimal=True), ORANGE), (c.bridge(variant="minimal"), BRIDGE), (c.clip("minimal"), CLIP)],
-    "5-minimal-case-only": [(c.case(minimal=True, towers=False), ORANGE)],
+    "1-full-case": [(c.case(), ORANGE), (c.bridge(), BRIDGE), (c.clip(), CLIP)],
+    "2-minimal-case-and-bridge": [(c.case(minimal=True), ORANGE), (c.bridge(), BRIDGE), (c.clip(), CLIP)],
+    "3-minimal-case-only": [(c.case(minimal=True, towers=False), ORANGE)],
 }
 outdir.mkdir(parents=True, exist_ok=True)
 only = sys.argv[1:] or list(kits)

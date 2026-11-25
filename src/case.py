@@ -74,41 +74,26 @@ CAP_CLEAR, CAP_WALL, CAP_LIP, CAP_BOTTOM = 0.45, 1.2, 0.45, 17.0
 # a longer straight run before the bend, at the cost of that much height.
 LIP_T = 0.9
 HOUSING_TOP = SUPPORT_TOP + PCB_T + HEADER_BASE + HOUSING_H
-# Low profile with tunnel: no slit through the plate. A closed roof sits DUCT_H above the lips, and the wires, which
-# bend over after rising through the slit between the lips, leave along y through the open ends of
-# the duct under it, so they never cross the top. The duct has the same section along its whole length (y is the
-# print axis), so it prints without supports. Plug the connector, fold the wires into a bundle towards the end
-# you want, then lower the bridge over them.
-DUCT_H, DUCT_W, DUCT_ROOF = 5.5, 8.0, 2.0
-MIN_PLATE_T = 1.6     # plate of the minimal bridge
-VARIANTS = {"original": dict(gap=3.45, t=3.0),      # gap above the lips, plate thickness: plate 28..31, top 31.0
-            "lowprofile": dict(gap=0.0, t=2.0),     # plate on the lips, top 26.55
-            "lowprofile-tunnel": dict(gap=DUCT_H, t=DUCT_ROOF, duct=True),
-            # Lowest the housing allows: a thin plate flush with the lip tops, so the bridge tops out at 24.55.
-            "minimal": dict(gap=-MIN_PLATE_T, t=MIN_PLATE_T, flush=True)}
-DEFAULT_VARIANT = "lowprofile"
+# The plate is a thin sheet flush with the lip tops, so the whole bridge tops out at the lip top (24.55).
+PLATE_T = 1.6
 
 
-def plate_z(variant):
+def plate_z():
     """(underside, top) of the plate."""
-    v = VARIANTS[variant]
-    z0 = HOUSING_TOP + CAP_CLEAR + LIP_T + v["gap"]
-    return (z0, z0 + v["t"])
+    lip_top = HOUSING_TOP + CAP_CLEAR + LIP_T
+    return (lip_top - PLATE_T, lip_top)
 
 
-def horn_z(variant):
-    """Horns for the clip: short stubs from HORN_BOTTOM to HORN_TOP, the same on every variant and centred on the notch,
-    so the clip, which is symmetric about the notch, fits any way up."""
+def horn_z():
+    """Horns for the clip: short stubs from HORN_BOTTOM to HORN_TOP, centred on the notch, so the clip, which is
+    symmetric about the notch, fits any way up."""
     return (HORN_BOTTOM, HORN_TOP)
 
 
-def bridge_profile(variant):
+def bridge_profile():
     """Left half, outer loop. The legs rise at 45 deg with a constant 3 mm strut: the outer edge passes through
     (-77, 20.3) and the inner one through (-74, 19.1), so both follow the plate height."""
-    z0, z1 = plate_z(variant)
-    if VARIANTS[variant].get("duct"):   # the strut ends in a square cut under the plate, which overlaps it
-        return [(-77.0, 18.1), (-77.0, 20.3), (z1 - 97.3, z1), (z0 - 93.1, z0), (-74.0, 19.1),
-                (-74.0, LEG_BOTTOM), (-75.0, LEG_BOTTOM), (-75.0, 18.1)]
+    z0, z1 = plate_z()
     return [(-77.0, 18.1), (-77.0, 20.3), (z1 - 97.3, z1), (-64.0, z1), (-64.0, z0), (z0 - 93.1, z0),
             (-74.0, 19.1), (-74.0, LEG_BOTTOM), (-75.0, LEG_BOTTOM), (-75.0, 18.1)]
 
@@ -259,13 +244,11 @@ def case(minimal=False, towers=True):
     return part - union(cuts)
 
 
-def bridge(closed=False, variant=DEFAULT_VARIANT):
-    """closed=True closes the cap and the wire slit at both ends: thread the wires before seating the pins."""
-    duct = VARIANTS[variant].get("duct", False)
-    closed = closed or duct   # the slit stays short; the duct is open at both ends
-    PLATE_Z = plate_z(variant)
-    HORN_Z = horn_z(variant)
-    left = CrossSection([np.array(bridge_profile(variant))], m3d.FillRule.EvenOdd)
+def bridge():
+    """Open bridge: the wire slit runs out of the +y end, so it slides onto the plugged-in wires."""
+    PLATE_Z = plate_z()
+    HORN_Z = horn_z()
+    left = CrossSection([np.array(bridge_profile())], m3d.FillRule.EvenOdd)
     right = left.mirror((1, 0)).translate((2 * BRIDGE_AXIS, 0))
     plate = rrect(-65.1, PLATE_Z[0], 2 * BRIDGE_AXIS + 65.1, PLATE_Z[1])
     hx, hy = HOUSING_C
@@ -275,25 +258,17 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
     frame = xz_prism(CrossSection.batch_boolean([left, right, plate], m3d.OpType.Add), BRIDGE_START_Y, hy + oy)
     frame += union([xz_prism(snap_profile(s, 0), *SNAP_BUMP_Y) for s in "LR"])
     lip_top = top + CAP_CLEAR + LIP_T
-    if VARIANTS[variant].get("flush"):  # the plate runs at housing height: clear the housing, the lips hold it
-        frame -= box(hx - ix, hy - iy, 0, hx + ix, hy + oy + 1, top + CAP_CLEAR)
-    # The duct is wider than the cap: the lips become a shelf out to the duct walls, which rise from it to the roof.
-    dw = DUCT_W / 2 + CAP_WALL if duct else ox
-    rail_top = lip_top if duct else PLATE_Z[0] + 0.01
+    frame -= box(hx - ix, hy - iy, 0, hx + ix, hy + oy + 1, top + CAP_CLEAR)   # the plate runs at housing height: clear the housing, the lips hold it
+    rail_top = PLATE_Z[0] + 0.01
     rails = [box(hx + s * ix, BRIDGE_START_Y, CAP_BOTTOM, hx + s * ox, hy + oy, rail_top) for s in (-1, 1)]
-    lips = [box(hx + s * (HOUSING_W / 2 - CAP_LIP), hy - iy, top + CAP_CLEAR, hx + s * dw, hy + iy, lip_top) for s in (-1, 1)]
-    posts = [box(hx - dw, hy - iy, CAP_BOTTOM, hx + dw, BRIDGE_START_Y, rail_top)]
-    if duct:
-        posts += [box(hx + s * DUCT_W / 2, BRIDGE_START_Y, lip_top - 0.01, hx + s * dw, hy + oy, PLATE_Z[0] + 0.01) for s in (-1, 1)]
-    elif closed:
-        posts.append(box(hx - ox, hy + iy, CAP_BOTTOM, hx + ox, hy + oy, PLATE_Z[0] + 0.01))
-    else:
-        end = hy + oy
-        posts += [box(hx + s * ix, end - 0.01, HORN_Z[0], hx + s * ox, end + HORN_L, HORN_Z[1]) -
-                  box(hx + s * (ox - NOTCH_DEPTH), end, NOTCH_Z[0], hx + s * (ox + 1), end + HORN_L + 1, NOTCH_Z[1])
-                  for s in (-1, 1)]
+    lips = [box(hx + s * (HOUSING_W / 2 - CAP_LIP), hy - iy, top + CAP_CLEAR, hx + s * ox, hy + iy, lip_top) for s in (-1, 1)]
+    posts = [box(hx - ox, hy - iy, CAP_BOTTOM, hx + ox, BRIDGE_START_Y, rail_top)]
+    end = hy + oy
+    posts += [box(hx + s * ix, end - 0.01, HORN_Z[0], hx + s * ox, end + HORN_L, HORN_Z[1]) -
+              box(hx + s * (ox - NOTCH_DEPTH), end, NOTCH_Z[0], hx + s * (ox + 1), end + HORN_L + 1, NOTCH_Z[1])
+              for s in (-1, 1)]
     ties = [box(x - TIE_SLOT[0] / 2, y - TIE_SLOT[1] / 2, PLATE_Z[0] - 1, x + TIE_SLOT[0] / 2, y + TIE_SLOT[1] / 2, PLATE_Z[1] + 1)
-            for x, y in TIE_SLOTS] if not duct else []   # the wires are inside, nothing to tie down
+            for x, y in TIE_SLOTS]
     rails_lips = [r + l for r, l in zip(rails, lips)]
     # Clearance pockets stop at the wall face so the ledge keeps its full bearing on the wall top.
     pcb_top = SUPPORT_TOP + PCB_T
@@ -302,22 +277,20 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
     inside = box(X0 + WALL, Y0, 0, X1 - WALL, Y1, PLATE_Z[1])
     # Wires rise straight out of the housing through a slit between the lips. Its ends are round
     # (no crack-starting corners) and reach 0.6 mm past the cavity so the end wires stay clear.
-    # Open version: the slit runs out of the +y end; slide the bridge onto the plugged-in wires.
+    # The slit runs out of the +y end; slide the bridge onto the plugged-in wires.
     sw = HOUSING_W / 2 - CAP_LIP
-    ends = (hy - iy + sw - 0.6, hy + iy - sw + 0.6 if closed else hy + oy + sw + 1)
-    slit_top = lip_top + 0.3 if duct else PLATE_Z[1] + 1   # the duct keeps its roof closed
+    ends = (hy - iy + sw - 0.6, hy + oy + sw + 1)
+    slit_top = PLATE_Z[1] + 1
     slit = Manifold.batch_hull([Manifold.cylinder(slit_top - top - CAP_CLEAR, sw, circular_segments=SEG)
                                 .translate((hx, y, top + CAP_CLEAR)) for y in ends])
-    # The tunnel roof is solid, so the logo goes in the middle of the bridge; elsewhere the slit is in the way.
-    logo_c = (BRIDGE_AXIS, (BRIDGE_START_Y + hy + oy) / 2) if duct else LOGO_C
     px0, px1, py0, py1 = P4_PLUG
-    # P4 cover: a block over the plug from just above it up to the plate, with a slot over each wired pin. A flush
-    # plate is lower than the plug, so the room under it is cut out first.
+    # P4 cover: a block over the plug from just above it up to the plate, with a slot over each wired pin. The plate
+    # is lower than the plug, so the room under it is cut out first.
     p4_lips = box(px0 - P4_LIP_OUT, py0 - P4_LIP_OUT, top + P4_GAP, px1 + P4_LIP_OUT, py1, PLATE_Z[0] + 0.01)
     p4_open = [box(P4_PIN1_X - (n - 1) * P4_PITCH - P4_SLOT_HALF, py0 + P4_LIP, 0, P4_PIN1_X - (n - 1) * P4_PITCH + P4_SLOT_HALF,
                    hy + oy + 1, PLATE_Z[1] + 1) for n in P4_WIRES]
     p4_room = box(px0 - CAP_CLEAR, py0 - CAP_CLEAR, 0, px1 + CAP_CLEAR, hy + oy + 1, top + P4_GAP)
-    cuts = ties + p4_open + [p4_room, slit, slab(brand_mark(logo_c), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
+    cuts = ties + p4_open + [p4_room, slit, slab(brand_mark(), PLATE_Z[1] - LOGO_DEPTH, PLATE_Z[1] + 1)]
     # The bulk capacitor sits 0.4-0.7 mm from the case wall, right where the left leg goes. The leg and its snap
     # bump are cut away from the capacitor to the end of the bridge, so the leg just stops: a pocket round the
     # capacitor alone would leave a sliver of leg hanging past it, in the air when printed. The ledge on the
@@ -329,9 +302,9 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
     return union([frame, p4_lips] + posts + rails_lips) - union(cuts + notch) - (union(pockets) ^ inside)
 
 
-def clip(variant=DEFAULT_VARIANT, clear=CLIP_CLEAR):
+def clip(clear=CLIP_CLEAR):
     """Bar with a through hole for each horn, built in place; prints lying flat. Symmetric about the notch."""
-    HORN_Z = horn_z(variant)
+    HORN_Z = horn_z()
     hx, hy = HOUSING_C
     ix, ox = HOUSING_W / 2 + CAP_CLEAR, HOUSING_W / 2 + CAP_CLEAR + CAP_WALL
     c = clear
@@ -376,23 +349,12 @@ if __name__ == "__main__":
     out = Path(__file__).resolve().parent.parent / "print"
     out.mkdir(exist_ok=True)
     parts = {"case": to_trimesh(case()), "case-minimal": to_trimesh(case(minimal=True, towers=False)),
-             "case-minimal-bridge": to_trimesh(case(minimal=True))}
-    for v, cfg in VARIANTS.items():
-        if cfg.get("duct"):  # the roof joins the two halves: no clip, no closed version
-            parts[f"bridge-{v}"] = to_trimesh(bridge(variant=v))
-            continue
-        parts[f"bridge-{v}"] = to_trimesh(bridge(variant=v))
-        if cfg.get("flush"):  # minimal: open version only
-            continue
-        if v != "original":  # the closed original adds nothing over the closed low profile
-            parts[f"bridge-{v}-closed"] = to_trimesh(bridge(closed=True, variant=v))
-    parts["clip"] = to_trimesh(clip())   # the same clip for every bridge
-    sets = {  # one folder per complete kit: the case plus the bridge pieces that go with it
-        "1-original": ["case", "bridge-original", "clip"],
-        "2-lowprofile": ["case", "bridge-lowprofile", "bridge-lowprofile-closed", "clip"],
-        "3-lowprofile-tunnel": ["case", "bridge-lowprofile-tunnel"],
-        "4-minimal-case-and-bridge": ["case-minimal-bridge", "bridge-minimal", "clip"],
-        "5-minimal-case-only": ["case-minimal"],
+             "case-minimal-bridge": to_trimesh(case(minimal=True)),
+             "bridge": to_trimesh(bridge()), "clip": to_trimesh(clip())}   # one bridge and one clip for every kit
+    sets = {  # one folder per complete kit
+        "1-full-case": ["case", "bridge", "clip"],
+        "2-minimal-case-and-bridge": ["case-minimal-bridge", "bridge", "clip"],
+        "3-minimal-case-only": ["case-minimal"],
     }
     assert {n for names in sets.values() for n in names} == set(parts)
     for name, tm in parts.items():
