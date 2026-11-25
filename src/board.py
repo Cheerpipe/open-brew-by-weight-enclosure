@@ -51,6 +51,7 @@ def board():
     # Buzzer module board on its pad and end rest, buzzer at the far end, right-angle header towards the relay wall.
     (hx0, hy0), (ml, mw) = SPK_HOLE, SPK_SIZE
     module = box(SPK_END_X, hy0 - mw / 2, SUPPORT_TOP, SPK_END_X + ml, hy0 + mw / 2, TOP)
+    module -= Manifold.cylinder(3, 1.5, circular_segments=32).translate((hx0, hy0, SUPPORT_TOP - 1))   # mounting hole, like the main board's
     module += can(SPK_END_X + 6.5, hy0, 12.0, 9.5)
     module += box(-44.0, -53.9, TOP, -41.5, -45.8, TOP + 2.5)              # right-angle header body
     plug = box(-42.4, -53.9, TOP, -28.4, -45.8, TOP + 2.6)                 # 1x3 dupont plug, ends 11.4 mm from the relay wall
