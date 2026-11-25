@@ -10,7 +10,7 @@ The case is built from three kinds of parts:
 
 - **Case:** the tray the board and the buzzer module screw into.
 - **Bridge:** a cover that snaps into the case over the 2×10 dupont connector so it can't work loose.
-- **Clip:** a small piece that holds the two halves of the bridge together at its open end.
+- **Clip:** a small bar that holds the two halves of the bridge together at its open end.
 
 ## Versions
 
@@ -101,8 +101,9 @@ Each kit folder has the parts in STL, 3MF and OBJ.
 2. Plug in the buzzer connector, which sits against the stop, and the 2×10 connector.
 3. Slide the bridge over the wires and press it down until it clicks into the case. For the tunnel bridge,
    fold the wires towards the end you want and lower the bridge over them.
-4. Slide the clip onto the two horns from the open end until it stops. It is a solid block with a socket for each
-   horn, so it holds the halves together and apart. A ridge in each socket rides in the horn's notch for extra grip.
+4. Slide the clip onto the two horns from the open end until it stops against the bridge. It is a short bar with a
+   through hole for each horn, so it holds the halves apart and together, and a ridge in each hole rides in the horn's
+   notch. It is symmetric, so it goes on any way round.
 5. Tie the wires leaving the case to the bridge slots with a cable tie.
 
 To remove the clip, pull it straight back off the horns. If it still works loose, put a drop of cyanoacrylate glue on the horns before sliding it on.
@@ -151,7 +152,7 @@ Printers differ. Change one value near the top of `src/case.py` and rebuild:
 | `DUCT_W`, `DUCT_H` | Width and height of the duct in the tunnel bridge. |
 | `P4_WIRES`, `P4_PLUG`, `P4_GAP` | Plug on the 1×6 P4 header. `P4_WIRES` lists the pins that have wires (default 1 and 5, counting from 1 at the pin nearest the case's right wall); the bridge covers the rest of the plug and opens a slot only over those. If your pin numbering runs the other way, use `(2, 6)`. `P4_GAP` is the gap above the plug (0.2 mm): raise it if the bridge will not snap in. `P4_PLUG` is the plug footprint. |
 | `SNAP_BUMP`, `SNAP_CLEAR` | Bridge-to-case snap: first number of each point is the hook depth (1.2 mm). Raise it to hold harder, lower it if the bridge is too hard to press in. `SNAP_CLEAR` is the groove clearance: lower it if the bridge rattles. |
-| `CLIP_CLEAR` | Clip fit, 0.05 mm by default: raise it (0.1, 0.15) if the clip will not slide on, set it to 0 if it is loose. `CLIP_BACK`, `CLIP_WALL` and `CLIP_BAR` set how thick the clip is. |
+| `CLIP_CLEAR` | Clip fit, 0.19 mm by default (picked from a printed test): raise it if the clip will not slide on, lower it if it is loose. `CLIP_WALL` and `CLIP_T` set the wall beside and above/below the holes. |
 | `SPK_STOP_FACE_X` | Position of the buzzer connector stop. |
 
 #### Screw hole size

@@ -97,10 +97,9 @@ def plate_z(variant):
 
 
 def horn_z(variant):
-    """Horns for the clip run from HORN_BOTTOM to the plate underside; on the flush plate they stop low enough
-    that the clip's top bar stays under the lip tops."""
-    v, z0 = VARIANTS[variant], plate_z(variant)[0]
-    return (HORN_BOTTOM, HOUSING_TOP + CAP_CLEAR + LIP_T - CLIP_CLEAR - CLIP_BAR if v.get("flush") else z0)
+    """Horns for the clip: short stubs from HORN_BOTTOM to HORN_TOP, the same on every variant and centred on the notch,
+    so the clip, which is symmetric about the notch, fits any way up."""
+    return (HORN_BOTTOM, HORN_TOP)
 
 
 def bridge_profile(variant):
@@ -134,14 +133,14 @@ CAP_MARGIN = 1.0
 LOGO_C, LOGO_H, LOGO_DEPTH = (-38.0, -22.0), 14.0, 0.6
 # Optional clip that ties the two halves of the open bridge together after installation: the cap
 # rails run on as horns past the plate end, and a press-on clip grips their notched outer faces.
-HORN_L, HORN_BOTTOM = 2.4, 20.0     # horns run from HORN_BOTTOM up to the plate underside
+HORN_L, HORN_BOTTOM, HORN_TOP = 2.4, 20.0, 23.0     # horns: length past the bridge end, bottom and top (centred on NOTCH_Z)
 NOTCH_Z, NOTCH_DEPTH = (21.0, 22.0), 0.4
-# The clip is a solid block with a blind socket for each horn: the horns go into it, so it holds them apart and
-# together, and cannot spring open. A ridge in each socket rides in the horn notch, adding grip. It slides on from
-# the open end. CLIP_CLEAR is the fit: lower is tighter. CLIP_BACK is the wall behind the sockets. The bottom stays
-# thin because the small capacitor is just below, and the outer walls are capped by the relay, whose corner is
-# 0.3 mm from the clip.
-CLIP_CLEAR, CLIP_WALL, CLIP_BAR, CLIP_BOTTOM, CLIP_BACK = 0.05, 1.6, 2.0, 1.6, 1.6
+# The clip is a short bar with a through hole for each horn: it slides onto the horns from the open end and its holes
+# hold them apart and together. A ridge in each hole rides in the horn notch. It is symmetric left-right, top-bottom
+# and front-back (the notch runs the whole horn), so it fits any way round. CLIP_CLEAR is the fit (0.19 mm printed well);
+# CLIP_WALL is the wall at the sides of the holes and CLIP_T above and below them. The bottom stays thin because the
+# small capacitor is just below, and the sides because of the relay, whose corner is 0.8 mm from the clip.
+CLIP_CLEAR, CLIP_WALL, CLIP_T = 0.19, 1.4, 1.35
 
 
 def rrect(x0, y0, x1, y1, r=0.0):
@@ -330,21 +329,21 @@ def bridge(closed=False, variant=DEFAULT_VARIANT):
     return union([frame, p4_lips] + posts + rails_lips) - union(cuts + notch) - (union(pockets) ^ inside)
 
 
-def clip(variant=DEFAULT_VARIANT):
-    """Solid block with a blind socket for each horn, built in place; prints with the socket mouths on the bed."""
+def clip(variant=DEFAULT_VARIANT, clear=CLIP_CLEAR):
+    """Bar with a through hole for each horn, built in place; prints lying flat. Symmetric about the notch."""
     HORN_Z = horn_z(variant)
     hx, hy = HOUSING_C
     ix, ox = HOUSING_W / 2 + CAP_CLEAR, HOUSING_W / 2 + CAP_CLEAR + CAP_WALL
-    c = CLIP_CLEAR
+    c = clear
     end = hy + HOUSING_L / 2 + CAP_CLEAR + CAP_WALL   # open end of the bridge
-    y0, y1 = end + c, end + HORN_L + 0.1 + CLIP_BACK
-    block = xz_prism(rrect(hx - ox - CLIP_WALL, HORN_Z[0] - c - CLIP_BOTTOM, hx + ox + CLIP_WALL, HORN_Z[1] + c + CLIP_BAR, 0.4), y0, y1)
-    sockets = []
+    y0, y1 = end + 0.05, end + HORN_L               # from the bridge end to the horn tips
+    block = xz_prism(rrect(hx - ox - c - CLIP_WALL, HORN_Z[0] - c - CLIP_T, hx + ox + c + CLIP_WALL, HORN_Z[1] + c + CLIP_T, 0.4), y0, y1)
+    holes = []
     for s in (-1, 1):
-        sock = rrect(min(s * (ix - c), s * (ox + c)), HORN_Z[0] - c, max(s * (ix - c), s * (ox + c)), HORN_Z[1] + c)
-        ridge = box2(s * (ox - NOTCH_DEPTH + c), NOTCH_Z[0] + c, s * (ox + c + 0.01), NOTCH_Z[1] - c)   # sits in the notch
-        sockets.append(xz_prism((sock - ridge).translate((hx, 0)), y0 - 0.01, end + HORN_L + 0.1))
-    return block - union(sockets)
+        hole = rrect(min(s * (ix - c), s * (ox + c)), HORN_Z[0] - c, max(s * (ix - c), s * (ox + c)), HORN_Z[1] + c)
+        ridge = box2(s * (ox - NOTCH_DEPTH + c), NOTCH_Z[0] + min(c, 0.2), s * (ox + c + 0.01), NOTCH_Z[1] - min(c, 0.2))   # rides in the notch
+        holes.append(xz_prism((hole - ridge).translate((hx, 0)), y0 - 0.01, y1 + 0.01))
+    return block - union(holes)
 
 
 def box2(xa, za, xb, zb):
@@ -383,17 +382,16 @@ if __name__ == "__main__":
             parts[f"bridge-{v}"] = to_trimesh(bridge(variant=v))
             continue
         parts[f"bridge-{v}"] = to_trimesh(bridge(variant=v))
-        if cfg.get("flush"):  # minimal: open version and its clip only
-            parts[f"clip-{v}"] = to_trimesh(clip(v))
+        if cfg.get("flush"):  # minimal: open version only
             continue
         if v != "original":  # the closed original adds nothing over the closed low profile
             parts[f"bridge-{v}-closed"] = to_trimesh(bridge(closed=True, variant=v))
-        parts[f"clip-{v}"] = to_trimesh(clip(v))
+    parts["clip"] = to_trimesh(clip())   # the same clip for every bridge
     sets = {  # one folder per complete kit: the case plus the bridge pieces that go with it
-        "1-original": ["case", "bridge-original", "clip-original"],
-        "2-lowprofile": ["case", "bridge-lowprofile", "bridge-lowprofile-closed", "clip-lowprofile"],
+        "1-original": ["case", "bridge-original", "clip"],
+        "2-lowprofile": ["case", "bridge-lowprofile", "bridge-lowprofile-closed", "clip"],
         "3-lowprofile-tunnel": ["case", "bridge-lowprofile-tunnel"],
-        "4-minimal-case-and-bridge": ["case-minimal-bridge", "bridge-minimal", "clip-minimal"],
+        "4-minimal-case-and-bridge": ["case-minimal-bridge", "bridge-minimal", "clip"],
         "5-minimal-case-only": ["case-minimal"],
     }
     assert {n for names in sets.values() for n in names} == set(parts)
